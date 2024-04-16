@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException,status
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
@@ -30,4 +30,12 @@ def create_post(post : Post):
     new_post = cursor.fetchone()
     conn.commit()
     return {"data": new_post}
+
+@app.get("/posts/{id}")
+def get_post(id : int):
+    cursor.execute("""SELECT * FROM posts WHERE id = %s """,(str(id)))
+    post = cursor.fetchone()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Post with id {id} not found !")
+    return {"data":post}
 
