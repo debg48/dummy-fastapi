@@ -39,3 +39,13 @@ def get_post(id : int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Post with id {id} not found !")
     return {"data":post}
 
+@app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(id : int):
+    cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *""",(str(id)))
+    deleted_post = cursor.fetchone()
+    conn.commit()
+    if not deleted_post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Post with id {id} not found !")
+    return {"data":deleted_post}
+
+
