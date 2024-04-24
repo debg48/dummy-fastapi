@@ -1,9 +1,10 @@
-from fastapi import FastAPI,HTTPException,status
+from fastapi import FastAPI,HTTPException,status,Depends
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
 from . import models
 from .database import SessionLocal,engine
+from sqlalchemy.orm import Session
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -23,13 +24,18 @@ class Post(BaseModel):
     published : bool = True
 
 try:
-    conn = psycopg2.connect(host='localhost',database='fastapi',user='postgres',password='',cursor_factory=RealDictCursor)
+    conn = psycopg2.connect(host='localhost',database='fastapi',user='postgres',password='1234',cursor_factory=RealDictCursor)
     cursor = conn.cursor()
     print("Database Connection Successful!")
     
 except Exception as e :
     print(str(e))
-    
+
+#test route
+@app.get('/sqlalchemy')
+def test_posts(db: Session = Depends(get_db)):
+    return {"status": "success"}
+
 @app.get("/posts")
 def get_posts():
     cursor.execute("""SELECT * FROM posts""")
