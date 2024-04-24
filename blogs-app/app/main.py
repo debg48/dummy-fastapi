@@ -2,8 +2,20 @@ from fastapi import FastAPI,HTTPException,status
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
+from . import models
+from .database import SessionLocal,engine
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 class Post(BaseModel):
     title : str 
