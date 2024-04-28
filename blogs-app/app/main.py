@@ -3,20 +3,13 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
 from . import models
-from .database import SessionLocal,engine
+from .database import engine,get_db
 from sqlalchemy.orm import Session
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 class Post(BaseModel):
     title : str 
@@ -24,7 +17,7 @@ class Post(BaseModel):
     published : bool = True
 
 try:
-    conn = psycopg2.connect(host='localhost',database='fastapi',user='postgres',password='1234',cursor_factory=RealDictCursor)
+    conn = psycopg2.connect(host='localhost',database='fastapi',user='postgres',password='',cursor_factory=RealDictCursor)
     cursor = conn.cursor()
     print("Database Connection Successful!")
     
