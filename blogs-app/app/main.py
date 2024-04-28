@@ -1,6 +1,6 @@
 from fastapi import FastAPI,HTTPException,status,Depends
-import psycopg2
-from psycopg2.extras import RealDictCursor
+# import psycopg2
+# from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
 from . import models
 from .database import engine,get_db
@@ -16,30 +16,36 @@ class Post(BaseModel):
     content : str 
     published : bool = True
 
-try:
-    conn = psycopg2.connect(host='localhost',database='fastapi',user='postgres',password='',cursor_factory=RealDictCursor)
-    cursor = conn.cursor()
-    print("Database Connection Successful!")
+# try:
+#     conn = psycopg2.connect(host='localhost',database='fastapi',user='postgres',password='',cursor_factory=RealDictCursor)
+#     cursor = conn.cursor()
+#     print("Database Connection Successful!")
     
-except Exception as e :
-    print(str(e))
+# except Exception as e :
+#     print(str(e))
 
 #test route
-@app.get('/sqlalchemy')
-def test_posts(db: Session = Depends(get_db)):
-    return {"status": "success"}
+# @app.get('/sqlalchemy')
+# def test_posts(db: Session = Depends(get_db)):
+#     posts = db.query(models.Post).all()
+#     return {"status": "success" , "data" : posts}
 
 @app.get("/posts")
-def get_posts():
-    cursor.execute("""SELECT * FROM posts""")
-    posts = cursor.fetchall()
+def get_posts(db: Session = Depends(get_db)):
+    # cursor.execute("""SELECT * FROM posts""")
+    # posts = cursor.fetchall()
+    posts = db.query(models.Post).all()
     return {"data":posts}
 
 @app.post("/posts")
-def create_post(post : Post):
-    cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""",(post.title, post.content, post.published))
-    new_post = cursor.fetchone()
-    conn.commit()
+def create_post(post : Post,db: Session = Depends(get_db)):
+    # cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""",(post.title, post.content, post.published))
+    # new_post = cursor.fetchone()
+    # conn.commit()
+    new_post = models.Post(**post.model_dump())
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
     return {"data": new_post}
 
 @app.get("/posts/{id}")
